@@ -2,6 +2,8 @@
 
 The following example introduces a known security vulnerability (SQL Injection) into your codebase.
 
+You will modify the existing simple web application by adding a new feature that introduces an SQL Injection vulnerability. 
+
 **Modified:** src/main/java/com/example/securewebapp/HomeController.java
 
 ```
