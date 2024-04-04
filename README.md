@@ -14,13 +14,15 @@ The repository `Java-web-application` appears to be a Java web application built
 
 - **A Web Browser:** Since part of the code is written in HTML, you would need a web browser to view the HTML pages rendered by the application.
 
-### exercise
+### Exercise
 
 The following example introduces a known security vulnerability (SQL Injection) into your codebase.
 
 You will modify the existing simple web application by adding a new feature that introduces an SQL Injection vulnerability. 
 
-**Modified:** src/main/java/com/example/securewebapp/HomeController.java
+**Step 1:** Create a branch called `sql-injection-fix`.
+
+**Step 2:** Add the below code to this path - `src/main/java/com/example/securewebapp/HomeController.java` (Remove full code and replace)
 
 ```
 package com.example.securewebapp;
@@ -55,3 +57,4 @@ public class HomeController {
     }
 }
 ```
+**Step 3:** Raise a pull request to the `main` branch.
