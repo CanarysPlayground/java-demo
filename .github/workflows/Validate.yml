@@ -1,0 +1,53 @@
+name: Validator
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Run Validator
+      run: |
+        logPath="/github/workspace/logs/gitlog/"
+        validatorResponse=$(curl -X POST http://172.27.8.66:4010/validator -H "Content-Type: application/json" -d '{"issueID" : "'"${{ github.event.pull_request.number }}"'","projectID" : "your_project_id","mergeID" : "your_merge_id","refname" : "'"${{ github.ref }}"'" ,"gitlogfile": "your_gitlogfile" ,"gitpath":"'"$logPath"'","gitinfo":"your_gitinfo","guid":"your_guid","branch":"'"${{ github.head_ref }}"'","currenttime":"'"$(date +%Y-%m-%dT%H:%M:%S)"'" }' --silent --write-out "HTTPSTATUS:%{http_code}")
+
+        echo $validatorResponse >>test.log
+        validatorout=$(echo $validatorResponse | sed -e 's/HTTPSTATUS\:.*//g')
+        validatorstatus=$(echo $validatorResponse | tr -d '\n' | sed -e 's/.*HTTPSTATUS://')
+        echo "ovalidatorOut" $validatorout >>test.log
+        echo "validatorStatus" $validatorstatus >>test.log
+        echo $validatorout | getJsonVal "['status']"
+        echo $validatorout | getJsonVal "['validationStatus']"
+        validationStatus=$(echo $validatorout | getJsonVal "['validationStatus']")
+        status=$(echo $validatorout | getJsonVal "['status']")
+        echo $validationStatus >> test.log
+        echo $status >> test.log
+
+        if [[ ${status} == '"failure"' ]]; then
+          echo "inside failure " >> test.log
+          validMsg=$(echo  $validatorout | getJsonVal "['validationMsg']")
+          echo "GL-HOOK-ERR: Devops Error Message:"
+          echo "GL-HOOK-ERR: $validMsg"
+          echo "GL-HOOK-ERR:"
+          exit 1
+        fi
+
+        failedIn=$(echo $validatorout | getJsonVal "['failedIn']")
+        echo $failedIn >> test.log
+        if [ "${failedIn}" == '"objectvalidation"' ]; then
+          echo
+          errorMsg=$(echo $validatorout | getJsonVal "['validationStatus']")
+          validMsg=$(echo $validatorout | getJsonVal "['validationMsg']")
+          echo "GL-HOOK-ERR: Devops Error Message:"
+          echo "GL-HOOK-ERR: $errorMsg"
+          echo "GL-HOOK-ERR: $validMsg"
+          echo
+          exit 1
+        fi
